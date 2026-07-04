@@ -1,5 +1,9 @@
+
+import { useNavigate } from "react-router-dom";
 function Hero() {
+  const navigate=useNavigate();
   return (
+    
     <section className="bg-gradient-to-br from-blue-50 via-white to-blue-100 px-6 md:px-12 py-20">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16">
 
@@ -24,9 +28,12 @@ function Hero() {
 
           <div className="flex flex-col sm:flex-row gap-5">
 
-            <button className="bg-blue-700 text-white px-7 py-4 rounded-xl font-semibold hover:bg-blue-800 hover:scale-105 transition-all duration-300">
-              Start Your Journey
-            </button>
+           <button
+  onClick={() => navigate("/dashboard")}
+  className="bg-blue-700 text-white px-7 py-4 rounded-xl font-semibold hover:bg-blue-800 transition"
+>
+  Start Your Journey
+</button>
 
             <button className="border border-gray-300 px-7 py-4 rounded-xl font-semibold hover:bg-gray-100 hover:scale-105 transition-all duration-300">
               Watch Demo

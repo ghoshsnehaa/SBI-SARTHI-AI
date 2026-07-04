@@ -1,10 +1,12 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
 
         {/* Logo */}
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3">
 
           <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold">
             S
@@ -20,33 +22,56 @@ function Navbar() {
             </p>
           </div>
 
-        </div>
+        </Link>
 
         {/* Navigation */}
 
-       <ul className="hidden md:flex gap-8 font-medium">
+        <ul className="hidden md:flex gap-8 font-medium">
 
-          <li className="hover:text-blue-700 cursor-pointer transition">
-            Home
+          <li>
+            <Link
+              to="/"
+              className="hover:text-blue-700 transition"
+            >
+              Home
+            </Link>
           </li>
 
-          <li className="hover:text-blue-700 cursor-pointer transition">
-            Features
+          <li>
+            <Link
+              to="/dashboard"
+              className="hover:text-blue-700 transition"
+            >
+              Dashboard
+            </Link>
           </li>
 
-          <li className="hover:text-blue-700 cursor-pointer transition">
-            About
+          <li>
+            <Link
+              to="/goal-planner"
+              className="hover:text-blue-700 transition"
+            >
+              Goal Planner
+            </Link>
           </li>
 
-          <li className="hover:text-blue-700 cursor-pointer transition">
-            Contact
+          <li>
+            <Link
+              to="/learning-hub"
+              className="hover:text-blue-700 transition"
+            >
+              Learning Hub
+            </Link>
           </li>
 
         </ul>
 
-        <button className="hidden md:block bg-blue-700 hover:bg-blue-800 transition text-white px-6 py-3 rounded-xl font-semibold">
+        <Link
+          to="/dashboard"
+          className="hidden md:block bg-blue-700 hover:bg-blue-800 transition text-white px-6 py-3 rounded-xl font-semibold"
+        >
           Get Started
-        </button>
+        </Link>
 
       </div>
     </nav>
