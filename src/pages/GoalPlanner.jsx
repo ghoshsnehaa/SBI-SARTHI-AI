@@ -1,20 +1,34 @@
-import { useState, useContext } from "react";
+import { useState, useContext,useEffect } from "react";
 import { GoalContext } from "../context/GoalContext";
+import axios from "axios";
 
 function GoalPlanner() {
   const [goalType, setGoalType] = useState("Home Loan");
   const [goalName, setGoalName] = useState("");
   const [monthlySaving, setMonthlySaving] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
+  const [aiRecommendation, setAiRecommendation] = useState("");
+const [loadingAI, setLoadingAI] = useState(false);
 
   const { goals, setGoals } = useContext(GoalContext);
+async function fetchGoals() {
+  try {
+    const response = await axios.get("http://localhost:5000/goals");
+    setGoals(response.data);
+  } catch (error) {
+    console.error("Error fetching goals:", error);
+  }
+}
+
+useEffect(() => {
+  fetchGoals();
+}, []);
 
   const [editIndex, setEditIndex] = useState(null);
 
-  // Load goals from Local Storage (runs once)
   
 
-  function addGoal() {
+  async function addGoal() {
     if (
       goalName.trim() === "" ||
       monthlySaving.trim() === "" ||
@@ -89,7 +103,12 @@ function GoalPlanner() {
       setGoals(updatedGoals);
       setEditIndex(null);
     } else {
-      setGoals([...goals, newGoal]);
+    await axios.post(
+  "http://localhost:5000/goals",
+  newGoal
+);
+
+await fetchGoals();
     }
 
     setGoalType("Home Loan");
@@ -97,6 +116,37 @@ function GoalPlanner() {
     setMonthlySaving("");
     setTargetAmount("");
   }
+  async function getRecommendation() {
+  if (
+    goalName.trim() === "" ||
+    monthlySaving.trim() === "" ||
+    targetAmount.trim() === ""
+  ) {
+    alert("Please enter goal details first.");
+    return;
+  }
+
+  try {
+    setLoadingAI(true);
+
+    const response = await axios.post(
+      "http://localhost:5000/recommend",
+      {
+        goal: goalName,
+        saving: monthlySaving,
+        target: targetAmount,
+      }
+    );
+
+    setAiRecommendation(response.data.recommendation);
+
+  } catch (error) {
+    console.error(error);
+    alert("Failed to generate AI recommendation.");
+  }
+
+  setLoadingAI(false);
+}
 
   function deleteGoal(indexToDelete) {
     const updatedGoals = goals.filter(
@@ -223,6 +273,23 @@ function GoalPlanner() {
         >
           {editIndex !== null ? "Update Goal" : "Add Goal"}
         </button>
+        <button
+  onClick={getRecommendation}
+  className="mt-4 w-full bg-purple-700 text-white py-3 rounded-xl font-semibold hover:bg-purple-800 transition"
+>
+  🤖 Get AI Recommendation
+</button>
+{aiRecommendation && (
+  <div className="mt-6 bg-purple-50 border border-purple-300 rounded-xl p-5">
+    <h2 className="text-xl font-bold mb-3">
+      🤖 SBI Sarthi AI Recommendation
+    </h2>
+
+    <p className="text-gray-700 whitespace-pre-line">
+      {loadingAI ? "Generating recommendation..." : aiRecommendation}
+    </p>
+  </div>
+)}
 
       </div>
 
