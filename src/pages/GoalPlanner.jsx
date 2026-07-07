@@ -24,7 +24,7 @@ useEffect(() => {
   fetchGoals();
 }, []);
 
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
 
   
 
@@ -97,19 +97,23 @@ useEffect(() => {
       color,
     };
 
-    if (editIndex !== null) {
-      const updatedGoals = [...goals];
-      updatedGoals[editIndex] = newGoal;
-      setGoals(updatedGoals);
-      setEditIndex(null);
-    } else {
-    await axios.post(
-  "http://localhost:5000/goals",
-  newGoal
-);
+    if (editId !== null) {
+  await axios.put(
+    `http://localhost:5000/goals/${editId}`,
+    newGoal
+  );
 
-await fetchGoals();
-    }
+  await fetchGoals();
+
+  setEditId(null);
+} else {
+  await axios.post(
+    "http://localhost:5000/goals",
+    newGoal
+  );
+
+  await fetchGoals();
+}
 
     setGoalType("Home Loan");
     setGoalName("");
@@ -118,9 +122,9 @@ await fetchGoals();
   }
   async function getRecommendation() {
   if (
-    goalName.trim() === "" ||
-    monthlySaving.trim() === "" ||
-    targetAmount.trim() === ""
+    !goalName ||
+    !monthlySaving ||
+    !targetAmount
   ) {
     alert("Please enter goal details first.");
     return;
@@ -141,32 +145,45 @@ await fetchGoals();
     setAiRecommendation(response.data.recommendation);
 
   } catch (error) {
-    console.error(error);
-    alert("Failed to generate AI recommendation.");
+
+  console.error(error);
+
+  if (error.response?.status === 429) {
+    alert("🤖 AI quota exceeded. Please try again later.");
+    return;
   }
 
+  if (error.response?.status === 503) {
+    alert("🤖 Gemini is currently busy. Please try again in a few minutes.");
+    return;
+  }
+
+  alert("Something went wrong while generating the recommendation.");
+}finally{
   setLoadingAI(false);
 }
-
-  function deleteGoal(indexToDelete) {
-    const updatedGoals = goals.filter(
-      (_, index) => index !== indexToDelete
+  }
+  async function deleteGoal(id) {
+  try {
+    await axios.delete(
+      `http://localhost:5000/goals/${id}`
     );
 
-    setGoals(updatedGoals);
+    await fetchGoals();
+
+  } catch (error) {
+    console.error(error);
   }
+}
 
-  function editGoal(index) {
-    const goal = goals[index];
+ function editGoal(goal) {
+  setGoalType(goal.type);
+  setGoalName(goal.name);
+  setMonthlySaving(String(goal.saving));
+  setTargetAmount(String(goal.target));
 
-    setGoalType(goal.type);
-    setGoalName(goal.name);
-    setMonthlySaving(goal.saving);
-    setTargetAmount(goal.target);
-
-    setEditIndex(index);
-  }
-
+  setEditId(goal._id);
+}
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-4xl font-bold mb-8">
@@ -271,7 +288,7 @@ await fetchGoals();
           onClick={addGoal}
           className="mt-8 w-full bg-blue-700 text-white py-3 rounded-xl font-semibold hover:bg-blue-800 transition"
         >
-          {editIndex !== null ? "Update Goal" : "Add Goal"}
+          {editId !== null ? "Update Goal" : "Add Goal"}
         </button>
         <button
   onClick={getRecommendation}
@@ -308,10 +325,10 @@ await fetchGoals();
         ) : (
           <div className="space-y-5">
 
-            {goals.map((goal, index) => (
+            {goals.map((goal) => (
 
               <div
-                key={index}
+                key={goal._id}
                 className="bg-white rounded-2xl shadow-md p-6"
               >
 
@@ -340,14 +357,14 @@ await fetchGoals();
                   <div className="flex gap-3">
 
                     <button
-                      onClick={() => editGoal(index)}
+                      onClick={() => editGoal(goal)}
                       className="bg-green-600 text-white px-4 py-2 rounded-xl hover:bg-green-700 transition"
                     >
                       Edit
                     </button>
 
                     <button
-                      onClick={() => deleteGoal(index)}
+                      onClick={() => deleteGoal(goal._id)}
                       className="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition"
                     >
                       Delete
